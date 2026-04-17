@@ -55,7 +55,7 @@
                     <input type="file" id="fileInput" accept=".svg" class="hidden" onchange="handleFileUpload(event)">
                 </label>
                 <button onclick="downloadSVG()" class="btn-action bg-green-600 text-white hover:bg-green-700 shadow-md shadow-green-100">
-                    <i data-lucide="download" class="w-4 h-4"></i> Exportar Gabarito (SVG)
+                    <i data-lucide="download" class="w-4 h-4"></i> Exportar SVG
                 </button>
             </div>
         </header>
@@ -70,11 +70,11 @@
                         <div class="space-y-4 border-r pr-4 border-gray-50">
                             <p class="text-[9px] font-bold text-blue-600 uppercase mb-1">Área da Chapa (mm)</p>
                             <div>
-                                <label class="block text-[10px] font-bold text-gray-400">LARGURA (X)</label>
+                                <label class="block text-[10px] font-bold text-gray-400">LARGURA mm (X)</label>
                                 <input type="number" id="sheetWidth" value="45" oninput="updatePreview()" class="w-full border-b-2 border-gray-100 p-1 text-sm outline-none focus:border-blue-500 bg-transparent">
                             </div>
                             <div>
-                                <label class="block text-[10px] font-bold text-gray-400">ALTURA (Y)</label>
+                                <label class="block text-[10px] font-bold text-gray-400">ALTURA mm (Y)</label>
                                 <input type="number" id="sheetHeight" value="55" oninput="updatePreview()" class="w-full border-b-2 border-gray-100 p-1 text-sm outline-none focus:border-blue-500 bg-transparent">
                             </div>
                         </div>
@@ -100,11 +100,11 @@
                     <div id="fileDimsDisplay" class="hidden space-y-4">
                         <div class="grid grid-cols-2 gap-3">
                             <div class="dimension-badge">
-                                <p class="text-[9px] font-bold text-gray-400 uppercase">Largura Fiel</p>
+                                <p class="text-[9px] font-bold text-gray-400 uppercase">Largura </p>
                                 <p id="infoItemW" class="text-sm font-bold text-red-600">-- mm</p>
                             </div>
                             <div class="dimension-badge">
-                                <p class="text-[9px] font-bold text-gray-400 uppercase">Altura Fiel</p>
+                                <p class="text-[9px] font-bold text-gray-400 uppercase">Altura </p>
                                 <p id="infoItemH" class="text-sm font-bold text-red-600">-- mm</p>
                             </div>
                         </div>
