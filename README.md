@@ -1,168 +1,293 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SLC Cut Master - Precisão Total</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { background-color: #f3f4f6; font-family: 'Inter', sans-serif; }
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
         .sheet-preview {
             background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
             background-size: 20px 20px;
             border: 2px border-dashed #94a3b8;
             position: relative;
-            overflow: hidden;
             background-color: white;
-            transition: all 0.3s ease;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transform-origin: top left;
         }
+
         .canvas-container {
-            max-height: 600px;
-            min-height: 450px;
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+            max-height: calc(100vh - 180px);
             overflow: auto;
+            background: #f1f5f9;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        .zoom-wrapper {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 40px;
-            background: #e2e8f0;
-            border-radius: 12px;
-            border: 1px solid #cbd5e1;
+            min-width: 100%;
+            min-height: 100%;
+            padding: 20px;
         }
+
+        .zoom-control-container {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 10px 4px;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 50;
+        }
+
+        .zoom-slider {
+            appearance: none;
+            width: 100px;
+            height: 4px;
+            background: #e2e8f0;
+            outline: none;
+            border-radius: 2px;
+            transform: rotate(-90deg);
+            margin: 45px -40px;
+            cursor: pointer;
+        }
+
+        .zoom-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: #2563eb;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid white;
+        }
+
         #sheetPreview svg { width: 100%; height: 100%; display: block; }
-        .btn-action { transition: all 0.2s; display: flex; align-items: center; gap: 8px; font-weight: 600; padding: 10px 20px; border-radius: 8px; font-size: 14px; }
-        .dimension-badge { background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px; border-radius: 6px; text-align: center; }
+        
+        .btn-action { 
+            transition: all 0.2s; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 6px; 
+            font-weight: 700; 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            font-size: 13px; 
+            text-transform: uppercase;
+        }
+
+        .input-compact {
+            border-bottom: 2px solid #e2e8f0;
+            padding: 2px 0;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.2s;
+            background: transparent;
+        }
+
+        .input-compact:focus {
+            border-color: #2563eb;
+        }
+
+        .card-panel {
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #edf2f7;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        input[type="number"] { font-size: 14px !important; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-2 md:p-4">
 
-    <div class="max-w-7xl mx-auto">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                    <i data-lucide="target" class="text-red-600"></i> NestWork App
-                </h1>
-                <p class="text-gray-400 text-xs font-bold uppercase tracking-widest">Otimize sua tarefa</p>
+    <div class="max-w-[1600px] mx-auto">
+        <!-- Header Compacto -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 bg-slate-900 p-3 rounded-xl shadow-lg">
+            <div class="flex items-center gap-3 pl-2">
+                <div class="bg-red-600 p-2 rounded-lg">
+                    <i data-lucide="scissors" class="text-white w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-black text-white leading-none tracking-tight">NESTWORK <span class="text-red-500">PRO</span></h1>
+                    <p class="text-slate-400 text-[9px] font-bold uppercase tracking-[0.2em]">otimize sua tarefa de agrupamento </p>
+                </div>
             </div>
             
-            <div class="flex flex-wrap gap-3">
-                <label class="btn-action bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer border border-blue-200">
-                    <i data-lucide="upload" class="w-4 h-4"></i> Importar SVG
+            <div class="flex gap-2 w-full md:w-auto">
+                <label class="btn-action flex-1 md:flex-none bg-blue-600 text-white hover:bg-blue-700 cursor-pointer shadow-lg shadow-blue-900/20">
+                    <i data-lucide="file-down" class="w-4 h-4"></i> <span>Importar SVG</span>
                     <input type="file" id="fileInput" accept=".svg" class="hidden" onchange="handleFileUpload(event)">
                 </label>
-                <button onclick="downloadSVG()" class="btn-action bg-green-600 text-white hover:bg-green-700 shadow-md shadow-green-100">
-                    <i data-lucide="download" class="w-4 h-4"></i> Exportar Gabarito (SVG)
+                <button onclick="downloadSVG()" class="btn-action flex-1 md:flex-none bg-emerald-500 text-white hover:bg-emerald-600 shadow-lg shadow-emerald-900/20">
+                    <i data-lucide="file-up" class="w-4 h-4"></i> <span>Exportar SVG</span>
                 </button>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div class="lg:col-span-1 space-y-4">
-                <div class="bg-white p-5 rounded-xl shadow-md border border-gray-100">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-6 flex items-center gap-2 border-b pb-2">
-                        <i data-lucide="settings-2" class="w-3.5 h-3.5"></i> Parâmetros de Produção
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <!-- Coluna de Controles (Lateral Esquerda) -->
+            <div class="lg:col-span-3 space-y-4">
+                
+                <!-- Painel de Dimensões -->
+                <div class="card-panel">
+                    <h2 class="text-[10px] font-black uppercase text-slate-400 mb-4 flex items-center gap-2">
+                        <i data-lucide="maximize" class="w-3 h-3"></i> Área de Trabalho
                     </h2>
                     <div class="grid grid-cols-2 gap-6">
-                        <div class="space-y-4 border-r pr-4 border-gray-50">
-                            <p class="text-[9px] font-bold text-blue-600 uppercase mb-1">Área da Chapa (mm)</p>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400">LARGURA (X)</label>
-                                <input type="number" id="sheetWidth" value="45" oninput="updatePreview()" class="w-full border-b-2 border-gray-100 p-1 text-sm outline-none focus:border-blue-500 bg-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400">ALTURA (Y)</label>
-                                <input type="number" id="sheetHeight" value="55" oninput="updatePreview()" class="w-full border-b-2 border-gray-100 p-1 text-sm outline-none focus:border-blue-500 bg-transparent">
-                            </div>
+                        <div class="border-r border-slate-100 pr-4">
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Largura (mm)</label>
+                            <input type="number" id="sheetWidth" value="45" oninput="updatePreview()" class="input-compact text-blue-600">
                         </div>
-                        <div class="space-y-4">
-                            <p class="text-[9px] font-bold text-orange-600 uppercase mb-1">Nesting</p>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400">QUANTIDADE</label>
-                                <input type="number" id="itemQty" value="1" min="0" oninput="generateLayout()" class="w-full border-b-2 border-gray-100 p-1 text-sm outline-none focus:border-orange-500 bg-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-gray-400">ESPAÇO (mm)</label>
-                                <input type="number" id="itemPadding" value="1" min="0" oninput="generateLayout()" class="w-full border-b-2 border-gray-100 p-1 text-sm outline-none focus:border-orange-500 bg-transparent">
-                            </div>
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Altura (mm)</label>
+                            <input type="number" id="sheetHeight" value="55" oninput="updatePreview()" class="input-compact text-blue-600">
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white p-5 rounded-xl shadow-md border border-gray-100">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4 flex items-center gap-2 border-b pb-2">
-                        <i data-lucide="ruler" class="w-3.5 h-3.5"></i> Medição do Arquivo
+                <!-- Painel de Nesting -->
+                <div class="card-panel">
+                    <h2 class="text-[10px] font-black uppercase text-slate-400 mb-4 flex items-center gap-2">
+                        <i data-lucide="layers" class="w-3 h-3"></i> Configuração de Cópia
                     </h2>
-                    <div id="fileDimsEmpty" class="text-center py-2"><p class="text-[10px] font-medium text-gray-400 uppercase italic">Aguardando Importação</p></div>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="border-r border-slate-100 pr-4">
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Quantidade</label>
+                            <input type="number" id="itemQty" value="1" min="0" oninput="generateLayout()" class="input-compact text-orange-600">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Espaçamento mm</label>
+                            <input type="number" id="itemPadding" value="1" min="0" oninput="generateLayout()" class="input-compact text-orange-600">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Painel de Ferramentas de Precisão -->
+                <div class="card-panel">
+                    <h2 class="text-[10px] font-black uppercase text-slate-400 mb-4 flex items-center gap-2">
+                        <i data-lucide="zap" class="w-3 h-3"></i> Ferramentas de Ajuste
+                    </h2>
+                    
+                    <div id="fileDimsEmpty" class="text-center py-4 bg-slate-50 rounded-lg border-2 border-dashed border-slate-100">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase italic">Aguardando Vetor...</p>
+                    </div>
+
                     <div id="fileDimsDisplay" class="hidden space-y-4">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="dimension-badge">
-                                <p class="text-[9px] font-bold text-gray-400 uppercase">Largura Fiel</p>
-                                <p id="infoItemW" class="text-sm font-bold text-red-600">-- mm</p>
+                        <div class="grid grid-cols-2 gap-2 mb-4">
+                            <div class="bg-slate-50 p-2 rounded border border-slate-100 text-center">
+                                <span class="block text-[8px] font-bold text-slate-400 uppercase">Vetor unitário L</span>
+                                <span id="infoItemW" class="text-xs font-black text-slate-700">--</span>
                             </div>
-                            <div class="dimension-badge">
-                                <p class="text-[9px] font-bold text-gray-400 uppercase">Altura Fiel</p>
-                                <p id="infoItemH" class="text-sm font-bold text-red-600">-- mm</p>
+                            <div class="bg-slate-50 p-2 rounded border border-slate-100 text-center">
+                                <span class="block text-[8px] font-bold text-slate-400 uppercase">Vetor unitário A</span>
+                                <span id="infoItemH" class="text-xs font-black text-slate-700">--</span>
                             </div>
                         </div>
-                        
-                        <!-- Botões de Ação Atualizados conforme pedido -->
-                        <div class="flex gap-1.5">
-                            <button id="fillQtyBtn" onclick="toggleFillQuantity()" class="flex-1 bg-gray-50 text-gray-700 border border-gray-200 py-3 rounded-lg font-bold text-[9px] uppercase hover:bg-gray-100 transition-colors flex items-center justify-center gap-1">
-                                <i data-lucide="layout-grid" class="w-3 h-3"></i> Preencher
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="fillQtyBtn" onclick="toggleFillQuantity()" class="btn-action bg-slate-100 text-slate-600 hover:bg-orange-100 hover:text-orange-700 border border-slate-200">
+                                <i data-lucide="expand" class="w-3.5 h-3.5"></i> <span class="text-[10px]">Preencher</span>
                             </button>
-                            <button id="fineTuneBtn" onclick="toggleFineTune()" class="flex-1 bg-gray-50 text-gray-700 border border-gray-200 py-3 rounded-lg font-bold text-[9px] uppercase hover:bg-gray-100 transition-colors flex items-center justify-center gap-1">
-                                <i data-lucide="refresh-cw" class="w-3 h-3"></i> Ajuste
+                            <button id="fineTuneBtn" onclick="toggleFineTune()" class="btn-action bg-slate-100 text-slate-600 hover:bg-purple-100 hover:text-purple-700 border border-slate-200">
+                                <i data-lucide="repeat" class="w-3.5 h-3.5"></i> <span class="text-[10px]">Inverter</span>
                             </button>
-                            <!-- Novo botão 90 Graus -->
-                            <button id="rotate90Btn" onclick="toggleRotate90()" class="flex-1 bg-gray-50 text-gray-700 border border-gray-200 py-3 rounded-lg font-bold text-[9px] uppercase hover:bg-gray-100 transition-colors flex items-center justify-center gap-1">
-                                <i data-lucide="rotate-ccw" class="w-3 h-3"></i> 90°
+                            <button id="rotate90Btn" onclick="cycleRotation()" class="btn-action bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 border border-slate-200">
+                                <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i> <span id="rotateBtnLabel" class="text-[10px]">0°</span>
                             </button>
-                            <!-- Botão Compactar realocado e diminuído -->
-                            <button id="compactBtn" onclick="toggleCompact()" class="flex-1 bg-gray-50 text-gray-700 border border-gray-200 py-3 rounded-lg font-bold text-[9px] uppercase hover:bg-gray-100 transition-colors flex items-center justify-center gap-1">
-                                <i data-lucide="shrink" class="w-3 h-3"></i> Compactar
+                            <button id="compactBtn" onclick="toggleCompact()" class="btn-action bg-slate-100 text-slate-600 hover:bg-blue-100 hover:text-blue-700 border border-slate-200">
+                                <i data-lucide="align-justify" class="w-3.5 h-3.5"></i> <span class="text-[10px]">Compactar</span>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div id="fileInfoDisplay" class="hidden space-y-3">
-                    <div class="flex items-center gap-2 p-2 bg-green-50 rounded-lg border border-green-100">
-                        <i data-lucide="check-circle" class="w-3.5 h-3.5 text-green-600"></i>
-                        <span id="fileName" class="text-[10px] font-bold text-green-800 truncate uppercase">---</span>
+                <div id="fileInfoDisplay" class="hidden">
+                    <div class="flex items-center gap-2 p-2 bg-emerald-50 rounded-lg border border-emerald-100">
+                        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+                        <span id="fileName" class="text-[10px] font-black text-emerald-800 truncate uppercase">---</span>
                     </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-3 space-y-4">
-                <div class="bg-white p-6 rounded-xl shadow-md h-full flex flex-col border border-gray-100">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-2">
+            <!-- Coluna de Preview (Principal) -->
+            <div class="lg:col-span-9">
+                <div class="card-panel h-full flex flex-col relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-3">
                         <div>
-                            <h2 class="text-xl font-bold text-gray-800">Visualização do Gabarito</h2>
-                            <p class="text-xs text-gray-400 uppercase font-bold tracking-tighter" id="sheetDimLabel">Chapa: 450 x 550 mm</p>
+                            <h2 class="text-sm font-black text-slate-800 uppercase tracking-tight">Preview da Área de Produção</h2>
+                            <p class="text-[10px] text-slate-400 font-bold" id="sheetDimLabel">---</p>
                         </div>
-                        <div id="statusBadge" class="px-3 py-1 bg-gray-50 text-gray-400 rounded-full text-[10px] font-bold uppercase border border-gray-100">Sem Vetor</div>
+                        
+                        <!-- Espaço centralizado para dimensões do arquivo ocupado -->
+                        <div class="flex-1 flex justify-center">
+                            <div id="occupiedDimsDisplay" class="hidden flex items-center gap-2 px-4 py-1.5 bg-blue-50 border border-blue-100 rounded-full">
+                                <i data-lucide="crop" class="w-3.5 h-3.5 text-blue-500"></i>
+                                <span class="text-[10px] font-black text-blue-700 uppercase tracking-wide">
+                                    Espaço Utilizado: <span id="occupiedW">0</span> x <span id="occupiedH">0</span> mm
+                                </span>
+                            </div>
+                        </div>
+
+                        <div id="statusBadge" class="px-3 py-1 bg-slate-100 text-slate-400 rounded-md text-[9px] font-black uppercase border border-slate-200">
+                            OFFLINE
+                        </div>
                     </div>
                     
-                    <div class="canvas-container flex-grow">
-                        <div id="sheetPreview" class="sheet-preview">
-                            <div id="placeholder" class="text-center opacity-10">
-                                <i data-lucide="maximize" class="w-20 h-20 mx-auto mb-4"></i>
-                                <p class="font-bold uppercase tracking-widest text-sm text-gray-600">Arraste o arquivo aqui</p>
+                    <div class="canvas-container" id="scrollContainer">
+                        <!-- Controle de Zoom -->
+                        <div class="zoom-control-container">
+                            <i data-lucide="plus" class="w-3 h-3 text-slate-400"></i>
+                            <input type="range" id="zoomSlider" min="0" max="100" value="0" class="zoom-slider" oninput="handleZoom(this.value)">
+                            <i data-lucide="minus" class="w-3 h-3 text-slate-400"></i>
+                            <span id="zoomLabel" class="text-[9px] font-black text-blue-600 mt-2">0%</span>
+                        </div>
+
+                        <div class="zoom-wrapper" id="zoomWrapper">
+                            <div id="sheetPreview" class="sheet-preview">
+                                <div id="placeholder" class="text-center opacity-20 py-20">
+                                    <i data-lucide="image-plus" class="w-16 h-16 mx-auto mb-2 text-slate-300"></i>
+                                    <p class="font-black uppercase text-xs text-slate-400">Arraste ou importe seu SVG</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="mt-6 flex flex-wrap gap-6 items-center justify-between border-t pt-4">
-                        <div class="flex gap-6">
-                            <div class="flex items-center gap-2">
-                                <span class="w-3 h-3 bg-red-600 rounded-full"></span>
-                                <span class="text-[10px] font-bold text-gray-500 uppercase">Vetor Real</span>
+                    <!-- Footer do Painel de Visualização -->
+                    <div class="mt-3 pt-3 border-t border-slate-50 flex flex-wrap gap-4 items-center justify-between">
+                        <div class="flex gap-4 items-center">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 bg-red-500 rounded-sm"></span>
+                                <span class="text-[10px] font-bold text-slate-500 uppercase">Caminho de Corte</span>
+                            </div>
+                            <div class="h-4 w-[1px] bg-slate-200"></div>
+                            <div id="resultInfo" class="text-[11px] font-black text-slate-700 uppercase font-mono">
+                                0 PEÇAS PROCESSADAS
                             </div>
                         </div>
-                        <div id="resultInfo" class="text-sm font-bold text-gray-700 italic font-mono uppercase"></div>
+                        <div class="text-[10px] font-bold text-slate-300 uppercase">
+                            NestWork Engine v2.5
+                        </div>
                     </div>
                 </div>
             </div>
@@ -176,6 +301,7 @@
             itemQty: document.getElementById('itemQty'),
             itemPadding: document.getElementById('itemPadding'),
             preview: document.getElementById('sheetPreview'),
+            zoomWrapper: document.getElementById('zoomWrapper'),
             dimLabel: document.getElementById('sheetDimLabel'),
             statusBadge: document.getElementById('statusBadge'),
             resultInfo: document.getElementById('resultInfo'),
@@ -185,7 +311,13 @@
             fineTuneBtn: document.getElementById('fineTuneBtn'),
             fillQtyBtn: document.getElementById('fillQtyBtn'),
             compactBtn: document.getElementById('compactBtn'),
-            rotate90Btn: document.getElementById('rotate90Btn')
+            rotate90Btn: document.getElementById('rotate90Btn'),
+            rotateBtnLabel: document.getElementById('rotateBtnLabel'),
+            zoomSlider: document.getElementById('zoomSlider'),
+            zoomLabel: document.getElementById('zoomLabel'),
+            occupiedW: document.getElementById('occupiedW'),
+            occupiedH: document.getElementById('occupiedH'),
+            occupiedContainer: document.getElementById('occupiedDimsDisplay')
         };
 
         lucide.createIcons();
@@ -197,23 +329,41 @@
         let isFineTuneEnabled = false; 
         let isFillEnabled = false; 
         let isCompactEnabled = false; 
-        let isRotate90Enabled = false; // Controle da nova funcionalidade de 90 graus
+        let currentRotation = 0; 
+        let currentZoom = 0; 
+        let baseW = 0, baseH = 0;
+        let originalFileName = ""; 
+        let lastPlacedCount = 0;   
         const NS_SVG = "http://www.w3.org/2000/svg";
+
+        function handleZoom(val) {
+            currentZoom = parseInt(val);
+            dom.zoomLabel.innerText = `${currentZoom}%`;
+            const scaleValue = 1 + (currentZoom / 100);
+            dom.preview.style.transform = `scale(${scaleValue})`;
+            dom.zoomWrapper.style.width = `${baseW * scaleValue + 40}px`;
+            dom.zoomWrapper.style.height = `${baseH * scaleValue + 40}px`;
+        }
 
         function updatePreview() {
             const w = parseFloat(dom.sheetWidth.value) || 1;
             const h = parseFloat(dom.sheetHeight.value) || 1;
             dom.dimLabel.innerText = `Chapa: ${w} x ${h} mm`;
 
-            const container = dom.preview.parentElement;
+            const container = document.getElementById('scrollContainer');
             if (!container) return;
             
-            const availableW = container.clientWidth - 80;
-            const availableH = container.clientHeight - 80;
+            const availableW = container.clientWidth - 60;
+            const availableH = container.clientHeight - 60;
             const screenScale = Math.min(availableW / w, availableH / h);
             
-            dom.preview.style.width = `${w * screenScale}px`;
-            dom.preview.style.height = `${h * screenScale}px`;
+            baseW = w * screenScale;
+            baseH = h * screenScale;
+
+            dom.preview.style.width = `${baseW}px`;
+            dom.preview.style.height = `${baseH}px`;
+            
+            handleZoom(dom.zoomSlider.value);
 
             if (isFileLoaded) generateLayout();
         }
@@ -223,6 +373,7 @@
             if (!file) return;
 
             try {
+                originalFileName = file.name.replace(/\.svg$/i, '');
                 const text = await file.text();
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(text, "image/svg+xml");
@@ -274,58 +425,57 @@
                 document.getElementById('fileInfoDisplay').classList.remove('hidden');
                 document.getElementById('fileDimsEmpty').classList.add('hidden');
                 document.getElementById('fileDimsDisplay').classList.remove('hidden');
+                dom.occupiedContainer.classList.remove('hidden');
                 
-                dom.infoItemW.innerText = `${itemSize.w.toFixed(2)} mm`;
-                dom.infoItemH.innerText = `${itemSize.h.toFixed(2)} mm`;
+                dom.infoItemW.innerText = `${itemSize.w.toFixed(1)} mm`;
+                dom.infoItemH.innerText = `${itemSize.h.toFixed(1)} mm`;
                 
                 const placeholder = document.getElementById('placeholder');
                 if (placeholder) placeholder.style.display = 'none';
                 
                 generateLayout();
             } catch (e) {
-                console.error("Erro no processamento:", e);
-                alert("Erro ao ler o arquivo SVG. Certifique-se de que ele contém vetores válidos.");
+                console.error("Erro:", e);
             }
         }
 
         function toggleFineTune() {
             isFineTuneEnabled = !isFineTuneEnabled;
-            updateBtnState(dom.fineTuneBtn, isFineTuneEnabled, 'bg-purple-600', 'border-purple-400');
+            updateBtnState(dom.fineTuneBtn, isFineTuneEnabled, 'bg-purple-600', 'border-purple-600');
             generateLayout();
         }
 
-        function toggleRotate90() {
-            isRotate90Enabled = !isRotate90Enabled;
-            updateBtnState(dom.rotate90Btn, isRotate90Enabled, 'bg-indigo-600', 'border-indigo-400');
+        function cycleRotation() {
+            currentRotation = (currentRotation + 90) % 360;
+            dom.rotateBtnLabel.innerText = `${currentRotation}°`;
+            const isActive = currentRotation !== 0;
+            updateBtnState(dom.rotate90Btn, isActive, 'bg-indigo-600', 'border-indigo-600');
             generateLayout();
         }
 
         function toggleFillQuantity() {
             if (!isFileLoaded) return;
             isFillEnabled = !isFillEnabled;
-            updateBtnState(dom.fillQtyBtn, isFillEnabled, 'bg-orange-600', 'border-orange-400');
+            updateBtnState(dom.fillQtyBtn, isFillEnabled, 'bg-orange-500', 'border-orange-500');
             
             if (isFillEnabled) {
                 const sw = parseFloat(dom.sheetWidth.value);
                 const sh = parseFloat(dom.sheetHeight.value);
                 const gap = parseFloat(dom.itemPadding.value) || 0;
-                
-                // Determina dimensões efetivas do item baseada na rotação de 90 graus
-                const effItemW = isRotate90Enabled ? itemSize.h : itemSize.w;
-                const effItemH = isRotate90Enabled ? itemSize.w : itemSize.h;
+                const isVerticalRotation = currentRotation === 90 || currentRotation === 270;
+                const effItemW = isVerticalRotation ? itemSize.h : itemSize.w;
+                const effItemH = isVerticalRotation ? itemSize.w : itemSize.h;
                 const verticalCompressionFactor = isCompactEnabled ? 0.85 : 1.0;
                 const effectiveRowH = effItemH * verticalCompressionFactor;
-                
                 const usableW = sw - gap;
                 const usableH = sh - gap;
-
-                if (usableW < effItemW || usableH < effItemH) {
-                    dom.itemQty.value = 0;
-                } else {
+                let calculatedQty = 0;
+                if (usableW >= effItemW && usableH >= effItemH) {
                     const cols = Math.floor((usableW + gap) / (effItemW + gap));
                     const rows = Math.floor((usableH - effItemH + gap) / (effectiveRowH + gap)) + 1;
-                    dom.itemQty.value = Math.max(0, cols * rows);
+                    calculatedQty = Math.max(0, cols * rows);
                 }
+                dom.itemQty.value = calculatedQty;
             } else {
                 dom.itemQty.value = 1;
             }
@@ -334,25 +484,23 @@
 
         function toggleCompact() {
             isCompactEnabled = !isCompactEnabled;
-            updateBtnState(dom.compactBtn, isCompactEnabled, 'bg-blue-600', 'border-blue-400');
+            updateBtnState(dom.compactBtn, isCompactEnabled, 'bg-blue-600', 'border-blue-600');
             generateLayout();
         }
 
-        function updateBtnState(btn, isActive, activeColor, activeBorder) {
+        function updateBtnState(btn, isActive, activeBg, activeBorder) {
             if (isActive) {
-                btn.classList.replace('bg-gray-50', activeColor);
-                btn.classList.replace('text-gray-700', 'text-white');
-                btn.classList.replace('border-gray-200', activeBorder);
+                btn.classList.replace('bg-slate-100', activeBg);
+                btn.classList.replace('text-slate-600', 'text-white');
+                btn.classList.replace('border-slate-200', activeBorder);
             } else {
-                btn.classList.replace(activeColor, 'bg-gray-50');
-                btn.classList.replace('text-white', 'text-gray-700');
-                btn.classList.replace(activeBorder, 'border-gray-200');
+                btn.classList.remove(activeBg, 'text-white', activeBorder);
+                btn.classList.add('bg-slate-100', 'text-slate-600', 'border-slate-200');
             }
         }
 
         function generateLayout() {
             if (!isFileLoaded) return;
-
             const sw = parseFloat(dom.sheetWidth.value) || 0;
             const sh = parseFloat(dom.sheetHeight.value) || 0;
             const targetQty = parseInt(dom.itemQty.value) || 0;
@@ -370,23 +518,21 @@
             const guide = document.createElementNS(NS_SVG, "rect");
             guide.setAttribute("id", "canvas-border");
             guide.setAttribute("width", sw); guide.setAttribute("height", sh);
-            guide.setAttribute("fill", "white"); guide.setAttribute("stroke", "#cbd5e1"); guide.setAttribute("stroke-width", "0.5");
+            guide.setAttribute("fill", "white"); guide.setAttribute("stroke", "#e2e8f0"); guide.setAttribute("stroke-width", "0.2");
             svg.appendChild(guide);
 
             const grid = document.createElementNS(NS_SVG, "g");
             grid.setAttribute("id", "nested-items");
 
-            let cursorX = gap;
-            let cursorY = gap;
-            let countPlaced = 0;
-            let currentRow = 0;
-
-            // Determina as dimensões que o item ocupa no grid baseado na rotação principal de 90 graus
-            const currentItemW = isRotate90Enabled ? itemSize.h : itemSize.w;
-            const currentItemH = isRotate90Enabled ? itemSize.w : itemSize.h;
-
+            let cursorX = gap, cursorY = gap, countPlaced = 0, currentRow = 0;
+            const isVerticalRotation = currentRotation === 90 || currentRotation === 270;
+            const currentItemW = isVerticalRotation ? itemSize.h : itemSize.w;
+            const currentItemH = isVerticalRotation ? itemSize.w : itemSize.h;
             const itemsPerRow = Math.floor((sw - gap + gap) / (currentItemW + gap));
             const verticalCompressionFactor = isCompactEnabled ? 0.85 : 1.0;
+
+            let maxReachX = 0;
+            let maxReachY = 0;
 
             for (let i = 0; i < targetQty; i++) {
                 if (cursorX + currentItemW > sw - gap + 0.001) {
@@ -394,102 +540,76 @@
                     cursorY += (currentItemH * verticalCompressionFactor) + gap;
                     currentRow++;
                 }
-
                 if (cursorY + currentItemH > sh - gap + 0.001) break;
 
                 const pieceGroup = document.createElementNS(NS_SVG, "g");
-                let transform = "";
-                
-                // Rotação individual de 180 (Ajuste Fino)
-                const shouldRotate180 = isFineTuneEnabled && (i % 2 !== 0);
-                
+                const shouldRotate180Extra = isFineTuneEnabled && (i % 2 !== 0);
                 let xOffset = 0;
                 if (isCompactEnabled && (currentRow % 2 !== 0)) {
-                    const rowSpaceTotal = sw - (2 * gap);
                     const rowItemsW = (itemsPerRow * currentItemW) + ((itemsPerRow - 1) * gap);
                     xOffset = Math.max(0, sw - gap - rowItemsW - gap);
                 }
-
-                // Cálculo do ponto central para as transformações
                 const centerX = itemSize.x + (itemSize.w/fileScale)/2;
                 const centerY = itemSize.y + (itemSize.h/fileScale)/2;
+                let combinedRotation = currentRotation + (shouldRotate180Extra ? 180 : 0);
 
-                // Construção da string de transformação
-                // 1. Movemos para a posição no grid
-                // 2. Aplicamos a escala original
-                // 3. Aplicamos rotação de 90 se habilitado
-                // 4. Aplicamos rotação de 180 se for ajuste fino
-                
-                let combinedRotation = 0;
-                if (isRotate90Enabled) combinedRotation += 90;
-                if (shouldRotate180) combinedRotation += 180;
-
-                // Quando rotacionado 90 graus, o centro de rotação muda a percepção de largura/altura
-                // Compensamos translação baseada na rotação de 90
-                let tx, ty;
-                if (isRotate90Enabled) {
-                    // Compensação para rotação 90 graus em torno do centro do bounding box
-                    tx = cursorX + xOffset - (itemSize.x * fileScale) + (currentItemW - itemSize.w)/2;
-                    ty = cursorY - (itemSize.y * fileScale) + (currentItemH - itemSize.h)/2;
-                } else {
-                    tx = cursorX + xOffset - (itemSize.x * fileScale);
-                    ty = cursorY - (itemSize.y * fileScale);
+                let tx = cursorX + xOffset - (itemSize.x * fileScale);
+                let ty = cursorY - (itemSize.y * fileScale);
+                if (isVerticalRotation) {
+                    tx += (currentItemW - itemSize.w)/2;
+                    ty += (currentItemH - itemSize.h)/2;
                 }
 
-                transform = `translate(${tx}, ${ty}) scale(${fileScale}) rotate(${combinedRotation}, ${centerX}, ${centerY})`;
-                
-                pieceGroup.setAttribute("transform", transform);
-                originalNodes.forEach(node => {
-                    pieceGroup.appendChild(node.cloneNode(true));
-                });
-                
+                pieceGroup.setAttribute("transform", `translate(${tx}, ${ty}) scale(${fileScale}) rotate(${combinedRotation}, ${centerX}, ${centerY})`);
+                originalNodes.forEach(node => pieceGroup.appendChild(node.cloneNode(true)));
                 grid.appendChild(pieceGroup);
+                
+                maxReachX = Math.max(maxReachX, cursorX + xOffset + currentItemW);
+                maxReachY = Math.max(maxReachY, cursorY + currentItemH);
+
                 cursorX += currentItemW + gap;
                 countPlaced++;
             }
 
             svg.appendChild(grid);
             dom.preview.appendChild(svg);
+            lastPlacedCount = countPlaced;
+            
+            // Atualiza as dimensões ocupadas reais (adicionando gap final se necessário, mas aqui pegamos o extremo das peças)
+            if (countPlaced > 0) {
+                dom.occupiedW.innerText = (maxReachX).toFixed(1);
+                dom.occupiedH.innerText = (maxReachY).toFixed(1);
+            } else {
+                dom.occupiedW.innerText = "0";
+                dom.occupiedH.innerText = "0";
+            }
 
             const isOk = (countPlaced >= targetQty && targetQty > 0);
-            dom.statusBadge.innerText = targetQty === 0 ? "Aguardando Quantidade" : (isOk ? "Grade Otimizada" : "Limite de Chapa Atingido");
-            dom.statusBadge.className = `px-3 py-1 ${isOk ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100'} rounded-full text-[10px] font-bold uppercase border`;
-            dom.resultInfo.innerText = `${countPlaced} instâncias distribuídas | Gap: ${gap}mm`;
+            dom.statusBadge.innerText = targetQty === 0 ? "Aguardando" : (isOk ? "Otimizado" : "Limitado");
+            dom.statusBadge.className = `px-3 py-1 ${isOk ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'} rounded-md text-[9px] font-black uppercase border`;
+            dom.resultInfo.innerText = `${countPlaced} PEÇAS PROCESSADAS`;
         }
 
         function downloadSVG() {
             const mainSvg = document.getElementById('production-svg');
             if (!mainSvg || !isFileLoaded) return;
-
             const exportClone = mainSvg.cloneNode(true);
             const border = exportClone.getElementById('canvas-border');
             if (border) border.remove();
-
-            const w = dom.sheetWidth.value;
-            const h = dom.sheetHeight.value;
-            
+            const w = dom.sheetWidth.value, h = dom.sheetHeight.value;
             exportClone.setAttribute("width", `${w}mm`);
             exportClone.setAttribute("height", `${h}mm`);
             exportClone.setAttribute("viewBox", `0 0 ${w} ${h}`);
-
             const serializer = new XMLSerializer();
             let svgString = serializer.serializeToString(exportClone);
-            
-            if (!svgString.includes('xmlns="http://www.w3.org/2000/svg"')) {
-                svgString = svgString.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
-            }
-            
-            const fileHeader = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>\r\n`;
-            const blob = new Blob([fileHeader + svgString], {type: 'image/svg+xml;charset=utf-8'});
-            const downloadUrl = URL.createObjectURL(blob);
-            
+            if (!svgString.includes('xmlns=')) svgString = svgString.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+            const blob = new Blob([`<?xml version="1.0" encoding="UTF-8"?>\r\n` + svgString], {type: 'image/svg+xml'});
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = `SLC_GABARITO_${w}x${h}mm.svg`;
-            document.body.appendChild(a);
+            a.href = url;
+            a.download = `${originalFileName}_NEST_[${lastPlacedCount}].svg`;
             a.click();
-            document.body.removeChild(a);
-            setTimeout(() => URL.revokeObjectURL(downloadUrl), 100);
+            URL.revokeObjectURL(url);
         }
 
         window.addEventListener('resize', updatePreview);
