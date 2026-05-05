@@ -1,8 +1,9 @@
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SLC Cut Master - Precisão Total</title>
+    <title>Nest Work app</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -129,8 +130,8 @@
                     <i data-lucide="scissors" class="text-white w-5 h-5"></i>
                 </div>
                 <div>
-                    <h1 class="text-lg font-black text-white leading-none tracking-tight">NESTWORK <span class="text-red-500">PRO</span></h1>
-                    <p class="text-slate-400 text-[9px] font-bold uppercase tracking-[0.2em]">otimize sua tarefa de agrupamento </p>
+                    <h1 class="text-lg font-black text-white leading-none tracking-tight">N  E  S  T      W  O  R  K <span class="text-red-500"></span></h1>
+                    <p class="text-slate-400 text-[9px] font-bold uppercase tracking-[0.2em]">Otimize sua tarefa de agrupamento </p>
                 </div>
             </div>
             
@@ -149,41 +150,44 @@
             <!-- Coluna de Controles (Lateral Esquerda) -->
             <div class="lg:col-span-3 space-y-4">
                 
-                <!-- Painel de Dimensões -->
-                <div class="card-panel">
-                    <h2 class="text-[10px] font-black uppercase text-slate-400 mb-4 flex items-center gap-2">
-                        <i data-lucide="maximize" class="w-3 h-3"></i> Área de Trabalho
-                    </h2>
-                    <div class="grid grid-cols-2 gap-6">
-                        <div class="border-r border-slate-100 pr-4">
-                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Largura (mm)</label>
-                            <input type="number" id="sheetWidth" value="45" oninput="updatePreview()" class="input-compact text-blue-600">
+                <!-- Painel Combinado: Área e Cópia (Ajuste Lateral de 50%) -->
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Área de Trabalho (Esquerda) -->
+                    <div class="card-panel">
+                        <h2 class="text-[10px] font-black uppercase text-slate-400 mb-4 flex items-center gap-2">
+                            <i data-lucide="maximize" class="w-3 h-3"></i> Área da chapa
+                        </h2>
+                        <div class="flex flex-col gap-4">
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Altura (mm)</label>
+                                <input type="number" id="sheetHeight" value="55" oninput="updatePreview()" class="input-compact text-blue-600">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Largura (mm)</label>
+                                <input type="number" id="sheetWidth" value="45" oninput="updatePreview()" class="input-compact text-blue-600">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Altura (mm)</label>
-                            <input type="number" id="sheetHeight" value="55" oninput="updatePreview()" class="input-compact text-blue-600">
+                    </div>
+
+                    <!-- Configuração de Cópia (Direita) -->
+                    <div class="card-panel">
+                        <h2 class="text-[10px] font-black uppercase text-slate-400 mb-4 flex items-center gap-2">
+                            <i data-lucide="layers" class="w-3 h-3"></i> Cópia
+                        </h2>
+                        <div class="flex flex-col gap-4">
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Quantidade</label>
+                                <input type="number" id="itemQty" value="1" min="0" oninput="generateLayout()" class="input-compact text-orange-600">
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Espessura mm</label>
+                                <input type="number" id="itemPadding" value="1" min="0" oninput="generateLayout()" class="input-compact text-orange-600">
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Painel de Nesting -->
-                <div class="card-panel">
-                    <h2 class="text-[10px] font-black uppercase text-slate-400 mb-4 flex items-center gap-2">
-                        <i data-lucide="layers" class="w-3 h-3"></i> Configuração de Cópia
-                    </h2>
-                    <div class="grid grid-cols-2 gap-6">
-                        <div class="border-r border-slate-100 pr-4">
-                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Quantidade</label>
-                            <input type="number" id="itemQty" value="1" min="0" oninput="generateLayout()" class="input-compact text-orange-600">
-                        </div>
-                        <div>
-                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Espaçamento mm</label>
-                            <input type="number" id="itemPadding" value="1" min="0" oninput="generateLayout()" class="input-compact text-orange-600">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Painel de Ferramentas de Precisão -->
+                <!-- Painel de Ferramentas de Precisão com campos realocados -->
                 <div class="card-panel">
                     <h2 class="text-[10px] font-black uppercase text-slate-400 mb-4 flex items-center gap-2">
                         <i data-lucide="zap" class="w-3 h-3"></i> Ferramentas de Ajuste
@@ -193,31 +197,35 @@
                         <p class="text-[10px] font-bold text-slate-400 uppercase italic">Aguardando Vetor...</p>
                     </div>
 
-                    <div id="fileDimsDisplay" class="hidden space-y-4">
-                        <div class="grid grid-cols-2 gap-2 mb-4">
-                            <div class="bg-slate-50 p-2 rounded border border-slate-100 text-center">
-                                <span class="block text-[8px] font-bold text-slate-400 uppercase">Vetor unitário L</span>
-                                <span id="infoItemW" class="text-xs font-black text-slate-700">--</span>
+                    <div id="fileDimsDisplay" class="hidden">
+                        <div class="grid grid-cols-12 gap-3 mb-4">
+                            <!-- Botões de Ação (Lado Esquerdo) -->
+                            <div class="col-span-7 grid grid-cols-2 gap-2">
+                                <button id="fillQtyBtn" onclick="toggleFillQuantity()" class="btn-action bg-slate-100 text-slate-600 hover:bg-orange-100 hover:text-orange-700 border border-slate-200">
+                                    <i data-lucide="expand" class="w-3.5 h-3.5"></i> <span class="text-[10px]">Preencher</span>
+                                </button>
+                                <button id="fineTuneBtn" onclick="toggleFineTune()" class="btn-action bg-slate-100 text-slate-600 hover:bg-purple-100 hover:text-purple-700 border border-slate-200">
+                                    <i data-lucide="repeat" class="w-3.5 h-3.5"></i> <span class="text-[10px]">Inverter</span>
+                                </button>
+                                <button id="rotate90Btn" onclick="cycleRotation()" class="btn-action bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 border border-slate-200">
+                                    <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i> <span id="rotateBtnLabel" class="text-[10px]">0°</span>
+                                </button>
+                                <button id="compactBtn" onclick="toggleCompact()" class="btn-action bg-slate-100 text-slate-600 hover:bg-blue-100 hover:text-blue-700 border border-slate-200">
+                                    <i data-lucide="align-justify" class="w-3.5 h-3.5"></i> <span class="text-[10px]">Compactar</span>
+                                </button>
                             </div>
-                            <div class="bg-slate-50 p-2 rounded border border-slate-100 text-center">
-                                <span class="block text-[8px] font-bold text-slate-400 uppercase">Vetor unitário A</span>
-                                <span id="infoItemH" class="text-xs font-black text-slate-700">--</span>
-                            </div>
-                        </div>
 
-                        <div class="grid grid-cols-2 gap-2">
-                            <button id="fillQtyBtn" onclick="toggleFillQuantity()" class="btn-action bg-slate-100 text-slate-600 hover:bg-orange-100 hover:text-orange-700 border border-slate-200">
-                                <i data-lucide="expand" class="w-3.5 h-3.5"></i> <span class="text-[10px]">Preencher</span>
-                            </button>
-                            <button id="fineTuneBtn" onclick="toggleFineTune()" class="btn-action bg-slate-100 text-slate-600 hover:bg-purple-100 hover:text-purple-700 border border-slate-200">
-                                <i data-lucide="repeat" class="w-3.5 h-3.5"></i> <span class="text-[10px]">Inverter</span>
-                            </button>
-                            <button id="rotate90Btn" onclick="cycleRotation()" class="btn-action bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 border border-slate-200">
-                                <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i> <span id="rotateBtnLabel" class="text-[10px]">0°</span>
-                            </button>
-                            <button id="compactBtn" onclick="toggleCompact()" class="btn-action bg-slate-100 text-slate-600 hover:bg-blue-100 hover:text-blue-700 border border-slate-200">
-                                <i data-lucide="align-justify" class="w-3.5 h-3.5"></i> <span class="text-[10px]">Compactar</span>
-                            </button>
+                            <!-- Vetor Unitário (Realocado para a Direita) -->
+                            <div class="col-span-5 flex flex-col gap-2">
+                                <div class="bg-slate-50 p-2 rounded border border-slate-100 text-center">
+                                    <span class="block text-[8px] font-bold text-slate-400 uppercase">Vetor A</span>
+                                    <span id="infoItemH" class="text-xs font-black text-slate-700">--</span>
+                                </div>
+                                <div class="bg-slate-50 p-2 rounded border border-slate-100 text-center">
+                                    <span class="block text-[8px] font-bold text-slate-400 uppercase">Vetor L</span>
+                                    <span id="infoItemW" class="text-xs font-black text-slate-700">--</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -607,7 +615,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${originalFileName}_NEST_[${lastPlacedCount}].svg`;
+            a.download = `${originalFileName} [${lastPlacedCount}]UNID.svg`;
             a.click();
             URL.revokeObjectURL(url);
         }
